@@ -4,19 +4,24 @@ export default function Nav() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="text-white px-6 py-4 bg-gray-900">
-      {/* Top Section: Logo */}
+    <nav className="text-whit px-4 sm:px-6 md:px-8 py-3 max-w-screen-xl mx-auto">
+      {/* Top Section: Logo + Hamburger */}
       <div className="flex items-center justify-between">
-        <img className="w-58" src="/images/Logo.jpg" alt="Logo" />
+        <img
+          className="w-56" // Keep this big
+          src="/images/Logo.jpg"
+          alt="Logo"
+        />
 
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden focus:outline-none"
+          className="md:hidden focus:outline-none p-2"
           aria-label="Toggle menu"
+          style={{ marginRight: "8px" }} // small margin from the right edge
         >
           <svg
-            className="w-1 h-3"
+            className="w-6 h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

@@ -7,7 +7,7 @@ export default function Home() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(/images/DSC_0374.jpg)`,
+          backgroundImage: `url(/images/-edited.jpg)`,
         }}
         aria-hidden="true"
       ></div>
@@ -20,12 +20,10 @@ export default function Home() {
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
           ยินดีต้อนรับสู่ ต๋อยกาแฟโบราณ
         </h1>
-        <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-md sm:max-w-xl">
-          Discover the best coffee blends and accessories crafted just for you.
-        </p>
-        <button className="mt-6 sm:mt-8 px-5 sm:px-6 lg:px-8 py-2 sm:py-3 bg-red-600 hover:bg-red-700 rounded text-sm sm:text-base lg:text-lg text-white font-semibold transition">
+
+        {/* <button className="mt-6 sm:mt-8 px-5 sm:px-6 lg:px-8 py-2 sm:py-3 bg-red-600 hover:bg-red-700 rounded text-sm sm:text-base lg:text-lg text-white font-semibold transition">
           Shop Now
-        </button>
+        </button> */}
       </div>
     </div>
   );
