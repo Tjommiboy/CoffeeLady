@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        thaired: "#e74644", // now usable as text-thaired, bg-thaired, etc.
+        thaired: "#e74644",
+        thaiblue: "#295BD4", // now usable as text-thaired, bg-thaired, etc.
       },
     },
   },

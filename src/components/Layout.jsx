@@ -6,20 +6,6 @@ export default function Layout() {
     <div className="flex flex-col min-h-screen bg-white">
       {/* Navigation */}
       <header className="bg-thaired text-white p-4">
-        {/* <nav className="flex justify-between items-center px-6">
-          <h1 className="text-2xl font-bold">Coffee Lady</h1>
-          <div className="space-x-4">
-            <Link to="/" className="hover:text-red-400">
-              Home
-            </Link>
-            <Link to="/about" className="hover:text-red-400">
-              About
-            </Link>
-            <Link to="/contact" className="hover:text-red-400">
-              Contact
-            </Link>
-          </div>
-        </nav> */}
         <Nav />
       </header>
 

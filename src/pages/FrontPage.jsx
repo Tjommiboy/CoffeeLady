@@ -7,7 +7,7 @@ export default function Home() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(/images/-edited.jpg)`,
+          backgroundImage: `url(/images/-edited_2.jpg)`,
         }}
         aria-hidden="true"
       ></div>

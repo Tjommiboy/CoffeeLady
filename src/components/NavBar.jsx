@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Nav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,12 +14,11 @@ export default function Nav() {
           alt="Logo"
         />
 
-        {/* Mobile Hamburger Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden focus:outline-none p-2"
+          className="md:hidden focus:outline-none p-1 bg-thaiblue"
           aria-label="Toggle menu"
-          style={{ marginRight: "8px" }} // small margin from the right edge
+          style={{ marginRight: "8px" }}
         >
           <svg
             className="w-6 h-6"
@@ -51,9 +51,9 @@ export default function Nav() {
         <a href="#" className="hover:text-yellow-400">
           Home
         </a>
-        <a href="#" className="hover:text-yellow-400">
+        <Link to="Menu" className="hover:text-yellow-400">
           Menu
-        </a>
+        </Link>
         <a href="#" className="hover:text-yellow-400">
           About
         </a>
@@ -65,34 +65,16 @@ export default function Nav() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="flex flex-col md:hidden mt-4 bg-gray-800">
-          <a
-            href="#"
-            className="px-6 py-3 border-b border-gray-700 hover:bg-yellow-500 hover:text-gray-900"
-            onClick={() => setIsOpen(false)}
-          >
+          <Link to="/" className=" px-6 py-3">
             Home
-          </a>
-          <a
-            href="#"
-            className="px-6 py-3 border-b border-gray-700 hover:bg-yellow-500 hover:text-gray-900"
-            onClick={() => setIsOpen(false)}
-          >
+          </Link>
+          <Link to="Menu" className=" px-6 py-3">
             Menu
-          </a>
-          <a
-            href="#"
-            className="px-6 py-3 border-b border-gray-700 hover:bg-yellow-500 hover:text-gray-900"
-            onClick={() => setIsOpen(false)}
-          >
-            About
-          </a>
-          <a
-            href="#"
-            className="px-6 py-3 hover:bg-yellow-500 hover:text-gray-900"
-            onClick={() => setIsOpen(false)}
-          >
+          </Link>
+
+          <Link to="Contact" className=" px-6 py-3">
             Contact
-          </a>
+          </Link>
         </div>
       )}
     </nav>

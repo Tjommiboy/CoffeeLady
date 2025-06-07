@@ -3,6 +3,7 @@ import Layout from "./components/Layout.jsx";
 import FrontPage from "./pages/FrontPage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
 import About from "./pages/About.jsx";
+import Menu from "./pages/Menu.jsx";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route index element={<FrontPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="About" element={<About />} />
+          <Route path="Menu" element={<Menu />} />
         </Route>
       </Routes>
     </BrowserRouter>
