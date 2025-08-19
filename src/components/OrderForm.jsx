@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import QRCode from "react-qr-code";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { db } from "../firebase.js"; // your firebase.js file
 
 const initialMenu = [
   { id: 1, name: "กาแฟเนส", prices: { medium: 25, large: 30 } },
@@ -31,10 +32,7 @@ const sweetnessOptions = [
   "Diabetes 100%",
 ];
 
-const promptPayNumber = "0812345678";
-
 export default function OrderForm() {
-  // menu items with cups grouped by size & sweetness
   const [menu, setMenu] = useState(
     initialMenu.map((item) => ({
       ...item,
@@ -42,10 +40,6 @@ export default function OrderForm() {
     }))
   );
 
-  // track which drink user wants to add size for (null = no prompt)
-  const [pendingAddDrinkId, setPendingAddDrinkId] = useState(null);
-
-  // Add a cup of given drink ID and size with default sweetness 50%
   const addCup = (id, size) => {
     setMenu((prevMenu) =>
       prevMenu.map((item) =>
@@ -60,10 +54,8 @@ export default function OrderForm() {
           : item
       )
     );
-    setPendingAddDrinkId(null); // close size prompt
   };
 
-  // Change sweetness for a specific cup
   const changeSweetness = (id, size, index, sweetness) => {
     setMenu((prevMenu) =>
       prevMenu.map((item) => {
@@ -83,7 +75,6 @@ export default function OrderForm() {
     );
   };
 
-  // Remove a cup from drink and size
   const removeCup = (id, size, index) => {
     setMenu((prevMenu) =>
       prevMenu.map((item) => {
@@ -101,7 +92,6 @@ export default function OrderForm() {
     );
   };
 
-  // Calculate total price
   const totalPrice = menu.reduce((acc, item) => {
     return (
       acc +
@@ -112,7 +102,44 @@ export default function OrderForm() {
     );
   }, 0);
 
-  // Compose order summary for email body
+  // Create structured items array for Firestore
+  const getOrderItems = () => {
+    const items = [];
+
+    menu.forEach((menuItem) => {
+      Object.entries(menuItem.sizes).forEach(([size, cups]) => {
+        cups.forEach((sweetness) => {
+          // Check if this item/size/sweetness combination already exists
+          const existingItem = items.find(
+            (item) =>
+              item.name === menuItem.name &&
+              item.size === size &&
+              item.sweetness === sweetness
+          );
+
+          if (existingItem) {
+            // Increment quantity if it exists
+            existingItem.quantity += 1;
+            existingItem.totalPrice += menuItem.prices[size];
+          } else {
+            // Add new item
+            items.push({
+              name: menuItem.name,
+              size: size,
+              sweetness: sweetness,
+              price: menuItem.prices[size],
+              quantity: 1,
+              totalPrice: menuItem.prices[size],
+            });
+          }
+        });
+      });
+    });
+
+    return items;
+  };
+
+  // Keep the summary for backwards compatibility or display purposes
   const orderSummary = menu
     .flatMap((item) =>
       Object.entries(item.sizes).flatMap(([size, cups]) =>
@@ -124,26 +151,37 @@ export default function OrderForm() {
     )
     .join("\n");
 
-  const handleConfirmOrder = () => {
-    if (!orderSummary) {
+  const handleConfirmOrder = async () => {
+    const orderItems = getOrderItems();
+
+    if (orderItems.length === 0) {
       alert("กรุณาเพิ่มเครื่องดื่มก่อนยืนยันคำสั่งซื้อ");
       return;
     }
 
-    const subject = encodeURIComponent("ยืนยันคำสั่งซื้อ / Order Confirmation");
-    const body = encodeURIComponent(`${orderSummary}\n\nรวม: ฿${totalPrice}`);
-    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
-    window.open(mailtoLink, "_blank");
-    alert(
-      "อีเมลจะถูกเปิดขึ้น โปรดยืนยันและส่งคำสั่งซื้อของคุณที่นั่น\nเมื่อได้รับ PromptPay คำสั่งซื้อของคุณจะถูกดำเนินการ"
-    );
+    try {
+      await addDoc(collection(db, "orders"), {
+        items: orderItems,
+        summary: orderSummary, // Keep for backwards compatibility
+        totalPrice: totalPrice,
+        status: "pending",
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
+
+      alert("คำสั่งซื้อของคุณถูกบันทึกเรียบร้อย!");
+      setMenu(
+        initialMenu.map((item) => ({
+          ...item,
+          sizes: { medium: [], large: [] },
+        }))
+      );
+    } catch (error) {
+      console.error("Error saving order:", error);
+      alert("เกิดข้อผิดพลาด! โปรดลองอีกครั้ง");
+    }
   };
 
-  const promptPayQRData = `promptpay://pay?number=${promptPayNumber}&amount=${totalPrice.toFixed(
-    2
-  )}`;
-
-  // Styles
   const styles = {
     container: {
       maxWidth: 420,
@@ -206,150 +244,60 @@ export default function OrderForm() {
       backgroundColor: "#52c41a",
       color: "white",
     },
-    qrContainer: {
-      marginTop: "2rem",
-      textAlign: "center",
-      background: "#fff",
-      padding: "1rem",
-      borderRadius: 8,
-    },
-    sizeSelectorOverlay: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 9999,
-    },
-    sizeSelectorBox: {
-      backgroundColor: "#fff",
-      padding: "1rem 2rem",
-      borderRadius: 12,
-      boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-      textAlign: "center",
-    },
-    sizeButton: {
-      margin: "0.2rem",
-      padding: "0.3rem .5rem",
-      fontSize: "1rem",
-      borderRadius: "8px",
-      cursor: "pointer",
-      border: "1px solid #ccc",
-      backgroundColor: "#e0f7fa",
-    },
-    cancelButton: {
-      marginTop: "1rem",
-      padding: "0.4rem 1.2rem",
-      borderRadius: 5,
-      cursor: "pointer",
-      border: "1px solid #f44336",
-      color: "#f44336",
-      backgroundColor: "#fff0f0",
-    },
-    drinkRow: {
-      marginBottom: "1.5rem",
-      paddingBottom: "1rem",
-      borderBottom: "1px solid #ccc", // Add this line
-    },
   };
 
   return (
     <div style={styles.container}>
-      <h1 style={{ textAlign: "center" }}>เมนูเครื่องดื่ม / Order Menu</h1>
-
       {menu.map((item) => (
         <div key={item.id} style={styles.drinkRow}>
           <div style={styles.drinkName}>{item.name}</div>
           <button
             style={styles.addButton}
-            onClick={() => setPendingAddDrinkId(item.id)}
+            onClick={() => addCup(item.id, "medium")}
           >
-            Add
+            Add Medium
+          </button>
+          <button
+            style={styles.addButton}
+            onClick={() => addCup(item.id, "large")}
+          >
+            Add Large
           </button>
 
-          {/* Show cups of this drink by size */}
-          <div style={styles.cupList}>
+          <ul style={styles.cupList}>
             {["medium", "large"].map((size) =>
-              item.sizes[size].map((sweetness, idx) => (
-                <div key={size + idx} style={styles.cupItem}>
-                  <span>
-                    {size} - Cup #{idx + 1}
-                  </span>
+              item.sizes[size].map((sweetness, index) => (
+                <li key={index} style={styles.cupItem}>
                   <select
+                    style={styles.selectSweetness}
                     value={sweetness}
                     onChange={(e) =>
-                      changeSweetness(item.id, size, idx, e.target.value)
+                      changeSweetness(item.id, size, index, e.target.value)
                     }
-                    style={styles.selectSweetness}
                   >
-                    {sweetnessOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                    {sweetnessOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
                       </option>
                     ))}
                   </select>
                   <button
-                    onClick={() => removeCup(item.id, size, idx)}
                     style={styles.removeButton}
-                    title="Remove cup"
+                    onClick={() => removeCup(item.id, size, index)}
                   >
-                    X
+                    Remove
                   </button>
-                </div>
+                </li>
               ))
             )}
-          </div>
+          </ul>
         </div>
       ))}
 
-      <div style={styles.totalPrice}>รวมทั้งหมด / Total: ฿{totalPrice}</div>
-
+      <div style={styles.totalPrice}>Total: {totalPrice} THB</div>
       <button style={styles.confirmButton} onClick={handleConfirmOrder}>
         Confirm Order
       </button>
-
-      {/* Show QR code only if there is an order */}
-      {totalPrice > 0 && (
-        <div style={styles.qrContainer}>
-          <div>PromptPay QR Code:</div>
-          <QRCode value={promptPayQRData} size={150} />
-          <div>PromptPay Number: {promptPayNumber}</div>
-        </div>
-      )}
-
-      {/* Size selector popup */}
-      {pendingAddDrinkId !== null && (
-        <div style={styles.sizeSelectorOverlay}>
-          <div style={styles.sizeSelectorBox}>
-            <div style={{ fontWeight: "bold", marginBottom: "1rem" }}>
-              เลือกขนาดแก้ว / Choose Size
-            </div>
-            <button
-              style={styles.sizeButton}
-              onClick={() => addCup(pendingAddDrinkId, "medium")}
-            >
-              Medium (฿25)
-            </button>
-            <button
-              style={styles.sizeButton}
-              onClick={() => addCup(pendingAddDrinkId, "large")}
-            >
-              Large (฿30)
-            </button>
-            <br />
-            <button
-              style={styles.cancelButton}
-              onClick={() => setPendingAddDrinkId(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -27,7 +27,7 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
+
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
@@ -71,4 +71,10 @@ button:focus-visible {
 }
 .thaired {
   color: #e74644;
+}
+
+.nav-link {
+  @apply hover:text-yellow-400 text-blue-400 transition-transform duration-200 ease-in-out 
+         hover:scale-105 font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl 
+         drop-shadow-[2px_2px_0px_white];
 }
